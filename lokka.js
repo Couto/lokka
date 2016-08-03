@@ -76,6 +76,23 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__(5)(function(){
+  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+module.exports = function(it){
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+/***/ },
+/* 2 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -90,7 +107,7 @@ exports.default = function (instance, Constructor) {
 };
 
 /***/ },
-/* 1 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -98,7 +115,7 @@ exports.default = function (instance, Constructor) {
 
 exports.__esModule = true;
 
-var _defineProperty = __webpack_require__(10);
+var _defineProperty = __webpack_require__(8);
 
 var _defineProperty2 = _interopRequireDefault(_defineProperty);
 
@@ -123,21 +140,258 @@ exports.default = function () {
 }();
 
 /***/ },
-/* 2 */
+/* 4 */
+/***/ function(module, exports) {
+
+var core = module.exports = {version: '2.4.0'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+module.exports = function(exec){
+  try {
+    return !!exec();
+  } catch(e){
+    return true;
+  }
+};
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
+if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-// Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(7)(function(){
-  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+var anObject       = __webpack_require__(11)
+  , IE8_DOM_DEFINE = __webpack_require__(16)
+  , toPrimitive    = __webpack_require__(18)
+  , dP             = Object.defineProperty;
+
+exports.f = __webpack_require__(0) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if(IE8_DOM_DEFINE)try {
+    return dP(O, P, Attributes);
+  } catch(e){ /* empty */ }
+  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
+  if('value' in Attributes)O[P] = Attributes.value;
+  return O;
+};
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(9), __esModule: true };
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+__webpack_require__(19);
+var $Object = __webpack_require__(4).Object;
+module.exports = function defineProperty(it, key, desc){
+  return $Object.defineProperty(it, key, desc);
+};
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+module.exports = function(it){
+  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(1);
+module.exports = function(it){
+  if(!isObject(it))throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+// optional / simple context binding
+var aFunction = __webpack_require__(10);
+module.exports = function(fn, that, length){
+  aFunction(fn);
+  if(that === undefined)return fn;
+  switch(length){
+    case 1: return function(a){
+      return fn.call(that, a);
+    };
+    case 2: return function(a, b){
+      return fn.call(that, a, b);
+    };
+    case 3: return function(a, b, c){
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function(/* ...args */){
+    return fn.apply(that, arguments);
+  };
+};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(1)
+  , document = __webpack_require__(6).document
+  // in old IE typeof document.createElement is 'object'
+  , is = isObject(document) && isObject(document.createElement);
+module.exports = function(it){
+  return is ? document.createElement(it) : {};
+};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+var global    = __webpack_require__(6)
+  , core      = __webpack_require__(4)
+  , ctx       = __webpack_require__(12)
+  , hide      = __webpack_require__(15)
+  , PROTOTYPE = 'prototype';
+
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , IS_WRAP   = type & $export.W
+    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , expProto  = exports[PROTOTYPE]
+    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
+    , key, own, out;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if(own && key in exports)continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function(C){
+      var F = function(a, b, c){
+        if(this instanceof C){
+          switch(arguments.length){
+            case 0: return new C;
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if(IS_PROTO){
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library` 
+module.exports = $export;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+var dP         = __webpack_require__(7)
+  , createDesc = __webpack_require__(17);
+module.exports = __webpack_require__(0) ? function(object, key, value){
+  return dP.f(object, key, createDesc(1, value));
+} : function(object, key, value){
+  object[key] = value;
+  return object;
+};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+module.exports = !__webpack_require__(0) && !__webpack_require__(5)(function(){
+  return Object.defineProperty(__webpack_require__(13)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
 
 /***/ },
-/* 3 */
+/* 17 */
+/***/ function(module, exports) {
+
+module.exports = function(bitmap, value){
+  return {
+    enumerable  : !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable    : !(bitmap & 4),
+    value       : value
+  };
+};
+
+/***/ },
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = __webpack_require__(1);
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function(it, S){
+  if(!isObject(it))return it;
+  var fn, val;
+  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+var $export = __webpack_require__(14);
+// 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
+$export($export.S + $export.F * !__webpack_require__(0), 'Object', {defineProperty: __webpack_require__(7).f});
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(0), __webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(2), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
   } else if (typeof exports !== "undefined") {
     factory(exports, require("babel-runtime/helpers/classCallCheck"), require("babel-runtime/helpers/createClass"));
   } else {
@@ -147,160 +401,144 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     factory(mod.exports, global.classCallCheck, global.createClass);
     global.cache = mod.exports;
   }
-})(this, function (exports) {
+})(this, function (exports, _classCallCheck2, _createClass2) {
   "use strict";
 
-  (function (global, factory) {
-    if (true) {
-      !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(0), __webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-    } else if (typeof exports !== "undefined") {
-      factory(exports);
-    } else {
-      var mod = {
-        exports: {}
-      };
-      factory(mod.exports, global.classCallCheck, global.createClass);
-      global.cache = mod.exports;
-    }
-  })(undefined, function (exports, _classCallCheck2, _createClass2) {
-    "use strict";
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Cache = undefined;
 
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.Cache = undefined;
+  var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-    var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+  var _createClass3 = _interopRequireDefault(_createClass2);
 
-    var _createClass3 = _interopRequireDefault(_createClass2);
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-    function _interopRequireDefault(obj) {
-      return obj && obj.__esModule ? obj : {
-        default: obj
-      };
+  var Cache = exports.Cache = function () {
+    function Cache() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      (0, _classCallCheck3.default)(this, Cache);
+
+      this.items = {};
+      this.cacheExpirationTimeout = options.cacheExpirationTimeout || 1000 * 60;
     }
 
-    var Cache = exports.Cache = function () {
-      function Cache() {
-        var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-        (0, _classCallCheck3.default)(this, Cache);
-
-        this.items = {};
-        this.cacheExpirationTimeout = options.cacheExpirationTimeout || 1000 * 60;
-      }
-
-      (0, _createClass3.default)(Cache, [{
-        key: "_ensureItem",
-        value: function _ensureItem(query, vars) {
-          var key = this._generateKey(query, vars);
-          if (!this.items[key]) {
-            this.items[key] = {
-              query: query,
-              vars: vars,
-              payload: undefined,
-              callbacks: []
-            };
-          }
-
-          return this.items[key];
-        }
-      }, {
-        key: "_generateKey",
-        value: function _generateKey(query, vars) {
-          var varsJson = JSON.stringify(vars || {});
-          return query + "::" + varsJson;
-        }
-      }, {
-        key: "watchItem",
-        value: function watchItem(query, vars, watcher) {
-          var _this = this;
-
-          var item = this._ensureItem(query, vars);
-          var key = this._generateKey(query, vars);
-
-          if (item.payload !== undefined) {
-            watcher(null, item.payload);
-          }
-
-          if (item.expireHandler) {
-            clearTimeout(item.expireHandler);
-            item.expireHandler = null;
-          }
-
-          item.callbacks.push(watcher);
-
-          // Return a callback to stop watching
-          return function () {
-            var index = item.callbacks.indexOf(watcher);
-            item.callbacks.splice(index, 1);
-            // We don't need to keep a reference for not watching items
-            if (item.callbacks.length === 0) {
-              item.expireHandler = setTimeout(function () {
-                delete _this.items[key];
-              }, _this.cacheExpirationTimeout);
-            }
+    (0, _createClass3.default)(Cache, [{
+      key: "_ensureItem",
+      value: function _ensureItem(query, vars) {
+        var key = this._generateKey(query, vars);
+        if (!this.items[key]) {
+          this.items[key] = {
+            query: query,
+            vars: vars,
+            payload: undefined,
+            callbacks: []
           };
         }
-      }, {
-        key: "getItemPayload",
-        value: function getItemPayload(query, vars) {
-          var key = this._generateKey(query, vars);
-          var item = this.items[key];
-          if (item) {
-            return this._clone(item.payload);
+
+        return this.items[key];
+      }
+    }, {
+      key: "_generateKey",
+      value: function _generateKey(query, vars) {
+        var varsJson = JSON.stringify(vars || {});
+        return query + "::" + varsJson;
+      }
+    }, {
+      key: "watchItem",
+      value: function watchItem(query, vars, watcher) {
+        var _this = this;
+
+        var item = this._ensureItem(query, vars);
+        var key = this._generateKey(query, vars);
+
+        if (item.payload !== undefined) {
+          watcher(null, item.payload);
+        }
+
+        if (item.expireHandler) {
+          clearTimeout(item.expireHandler);
+          item.expireHandler = null;
+        }
+
+        item.callbacks.push(watcher);
+
+        // Return a callback to stop watching
+        return function () {
+          var index = item.callbacks.indexOf(watcher);
+          item.callbacks.splice(index, 1);
+          // We don't need to keep a reference for not watching items
+          if (item.callbacks.length === 0) {
+            item.expireHandler = setTimeout(function () {
+              delete _this.items[key];
+            }, _this.cacheExpirationTimeout);
           }
+        };
+      }
+    }, {
+      key: "getItemPayload",
+      value: function getItemPayload(query, vars) {
+        var key = this._generateKey(query, vars);
+        var item = this.items[key];
+        if (item) {
+          return this._clone(item.payload);
         }
-      }, {
-        key: "setItemPayload",
-        value: function setItemPayload(query, vars, payload) {
-          var _this2 = this;
+      }
+    }, {
+      key: "setItemPayload",
+      value: function setItemPayload(query, vars, payload) {
+        var _this2 = this;
 
-          var item = this._ensureItem(query, vars);
-          item.payload = this._clone(payload);
-          item.callbacks.forEach(function (c) {
-            return c(null, _this2._clone(payload));
-          });
+        var item = this._ensureItem(query, vars);
+        item.payload = this._clone(payload);
+        item.callbacks.forEach(function (c) {
+          return c(null, _this2._clone(payload));
+        });
+      }
+    }, {
+      key: "fireError",
+      value: function fireError(query, vars, error) {
+        var key = this._generateKey(query, vars);
+        var item = this.items[key];
+        if (!item) {
+          return;
         }
-      }, {
-        key: "fireError",
-        value: function fireError(query, vars, error) {
-          var key = this._generateKey(query, vars);
-          var item = this.items[key];
-          if (!item) {
-            return;
-          }
 
-          item.callbacks.forEach(function (c) {
-            return c(error);
-          });
-        }
-      }, {
-        key: "removeItem",
-        value: function removeItem(query, vars) {
-          var key = this._generateKey(query, vars);
-          delete this.items[key];
-        }
-      }, {
-        key: "getItem",
-        value: function getItem(query, vars) {
-          var key = this._generateKey(query, vars);
-          return this.items[key];
-        }
-      }, {
-        key: "_clone",
-        value: function _clone(payload) {
-          return JSON.parse(JSON.stringify(payload));
-        }
-      }]);
-      return Cache;
-    }();
+        item.callbacks.forEach(function (c) {
+          return c(error);
+        });
+      }
+    }, {
+      key: "removeItem",
+      value: function removeItem(query, vars) {
+        var key = this._generateKey(query, vars);
+        delete this.items[key];
+      }
+    }, {
+      key: "getItem",
+      value: function getItem(query, vars) {
+        var key = this._generateKey(query, vars);
+        return this.items[key];
+      }
+    }, {
+      key: "_clone",
+      value: function _clone(payload) {
+        return JSON.parse(JSON.stringify(payload));
+      }
+    }]);
+    return Cache;
+  }();
 
-    exports.default = Cache;
-  });
+  exports.default = Cache;
 });
 
 /***/ },
-/* 4 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 //     uuid.js
@@ -489,260 +727,6 @@ module.exports = uuid;
 
 
 /***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-module.exports = function(it){
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-var core = module.exports = {version: '2.4.0'};
-if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-module.exports = function(exec){
-  try {
-    return !!exec();
-  } catch(e){
-    return true;
-  }
-};
-
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
-
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-var global = module.exports = typeof window != 'undefined' && window.Math == Math
-  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
-if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-var anObject       = __webpack_require__(13)
-  , IE8_DOM_DEFINE = __webpack_require__(18)
-  , toPrimitive    = __webpack_require__(20)
-  , dP             = Object.defineProperty;
-
-exports.f = __webpack_require__(2) ? Object.defineProperty : function defineProperty(O, P, Attributes){
-  anObject(O);
-  P = toPrimitive(P, true);
-  anObject(Attributes);
-  if(IE8_DOM_DEFINE)try {
-    return dP(O, P, Attributes);
-  } catch(e){ /* empty */ }
-  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
-  if('value' in Attributes)O[P] = Attributes.value;
-  return O;
-};
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(11), __esModule: true };
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-__webpack_require__(21);
-var $Object = __webpack_require__(6).Object;
-module.exports = function defineProperty(it, key, desc){
-  return $Object.defineProperty(it, key, desc);
-};
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-module.exports = function(it){
-  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(5);
-module.exports = function(it){
-  if(!isObject(it))throw TypeError(it + ' is not an object!');
-  return it;
-};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-// optional / simple context binding
-var aFunction = __webpack_require__(12);
-module.exports = function(fn, that, length){
-  aFunction(fn);
-  if(that === undefined)return fn;
-  switch(length){
-    case 1: return function(a){
-      return fn.call(that, a);
-    };
-    case 2: return function(a, b){
-      return fn.call(that, a, b);
-    };
-    case 3: return function(a, b, c){
-      return fn.call(that, a, b, c);
-    };
-  }
-  return function(/* ...args */){
-    return fn.apply(that, arguments);
-  };
-};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(5)
-  , document = __webpack_require__(8).document
-  // in old IE typeof document.createElement is 'object'
-  , is = isObject(document) && isObject(document.createElement);
-module.exports = function(it){
-  return is ? document.createElement(it) : {};
-};
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-var global    = __webpack_require__(8)
-  , core      = __webpack_require__(6)
-  , ctx       = __webpack_require__(14)
-  , hide      = __webpack_require__(17)
-  , PROTOTYPE = 'prototype';
-
-var $export = function(type, name, source){
-  var IS_FORCED = type & $export.F
-    , IS_GLOBAL = type & $export.G
-    , IS_STATIC = type & $export.S
-    , IS_PROTO  = type & $export.P
-    , IS_BIND   = type & $export.B
-    , IS_WRAP   = type & $export.W
-    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
-    , expProto  = exports[PROTOTYPE]
-    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
-    , key, own, out;
-  if(IS_GLOBAL)source = name;
-  for(key in source){
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    if(own && key in exports)continue;
-    // export native or passed
-    out = own ? target[key] : source[key];
-    // prevent global pollution for namespaces
-    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
-    // bind timers to global for call from export context
-    : IS_BIND && own ? ctx(out, global)
-    // wrap global constructors for prevent change them in library
-    : IS_WRAP && target[key] == out ? (function(C){
-      var F = function(a, b, c){
-        if(this instanceof C){
-          switch(arguments.length){
-            case 0: return new C;
-            case 1: return new C(a);
-            case 2: return new C(a, b);
-          } return new C(a, b, c);
-        } return C.apply(this, arguments);
-      };
-      F[PROTOTYPE] = C[PROTOTYPE];
-      return F;
-    // make static versions for prototype methods
-    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
-    if(IS_PROTO){
-      (exports.virtual || (exports.virtual = {}))[key] = out;
-      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
-      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
-    }
-  }
-};
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library` 
-module.exports = $export;
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-var dP         = __webpack_require__(9)
-  , createDesc = __webpack_require__(19);
-module.exports = __webpack_require__(2) ? function(object, key, value){
-  return dP.f(object, key, createDesc(1, value));
-} : function(object, key, value){
-  object[key] = value;
-  return object;
-};
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-module.exports = !__webpack_require__(2) && !__webpack_require__(7)(function(){
-  return Object.defineProperty(__webpack_require__(15)('div'), 'a', {get: function(){ return 7; }}).a != 7;
-});
-
-/***/ },
-/* 19 */
-/***/ function(module, exports) {
-
-module.exports = function(bitmap, value){
-  return {
-    enumerable  : !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable    : !(bitmap & 4),
-    value       : value
-  };
-};
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(5);
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-module.exports = function(it, S){
-  if(!isObject(it))return it;
-  var fn, val;
-  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
-  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
-  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-var $export = __webpack_require__(16);
-// 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
-$export($export.S + $export.F * !__webpack_require__(2), 'Object', {defineProperty: __webpack_require__(9).f});
-
-/***/ },
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -809,9 +793,9 @@ module.exports = g;
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(0), __webpack_require__(1), __webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(2), __webpack_require__(3), __webpack_require__(21), __webpack_require__(20)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
   } else if (typeof exports !== "undefined") {
     factory(exports, require('babel-runtime/helpers/classCallCheck'), require('babel-runtime/helpers/createClass'), require('uuid'), require('./cache'));
   } else {
@@ -821,197 +805,181 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     factory(mod.exports, global.classCallCheck, global.createClass, global.uuid, global.cache);
     global.index = mod.exports;
   }
-})(this, function (exports) {
+})(this, function (exports, _classCallCheck2, _createClass2, _uuid, _cache) {
   'use strict';
 
-  (function (global, factory) {
-    if (true) {
-      !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(0), __webpack_require__(1), __webpack_require__(4), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-    } else if (typeof exports !== "undefined") {
-      factory(exports);
-    } else {
-      var mod = {
-        exports: {}
-      };
-      factory(mod.exports, global.classCallCheck, global.createClass, global.uuid, global.cache);
-      global.index = mod.exports;
-    }
-  })(undefined, function (exports, _classCallCheck2, _createClass2, _uuid, _cache) {
-    'use strict';
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Lokka = undefined;
 
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.Lokka = undefined;
+  var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-    var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+  var _createClass3 = _interopRequireDefault(_createClass2);
 
-    var _createClass3 = _interopRequireDefault(_createClass2);
+  var _uuid2 = _interopRequireDefault(_uuid);
 
-    var _uuid2 = _interopRequireDefault(_uuid);
+  var _cache2 = _interopRequireDefault(_cache);
 
-    var _cache2 = _interopRequireDefault(_cache);
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-    function _interopRequireDefault(obj) {
-      return obj && obj.__esModule ? obj : {
-        default: obj
-      };
+  var Lokka = function () {
+    function Lokka() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      (0, _classCallCheck3.default)(this, Lokka);
+
+      this._transport = options.transport;
+      this._fragments = {};
+      this._validateTransport(this._transport);
+      this.cache = new _cache2.default();
+      this._fetchingQueries = {};
     }
 
-    var Lokka = function () {
-      function Lokka() {
-        var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-        (0, _classCallCheck3.default)(this, Lokka);
+    (0, _createClass3.default)(Lokka, [{
+      key: '_validateTransport',
+      value: function _validateTransport(transport) {
+        if (!transport) {
+          throw new Error('transport is required!');
+        }
 
-        this._transport = options.transport;
-        this._fragments = {};
-        this._validateTransport(this._transport);
-        this.cache = new _cache2.default();
-        this._fetchingQueries = {};
+        if (typeof transport.send !== 'function') {
+          throw new Error('transport should have a .send() method!');
+        }
       }
-
-      (0, _createClass3.default)(Lokka, [{
-        key: '_validateTransport',
-        value: function _validateTransport(transport) {
-          if (!transport) {
-            throw new Error('transport is required!');
-          }
-
-          if (typeof transport.send !== 'function') {
-            throw new Error('transport should have a .send() method!');
-          }
+    }, {
+      key: 'send',
+      value: function send(rawQuery, vars) {
+        if (!rawQuery) {
+          throw new Error('rawQuery is required!');
         }
-      }, {
-        key: 'send',
-        value: function send(rawQuery, vars) {
-          if (!rawQuery) {
-            throw new Error('rawQuery is required!');
-          }
 
-          return this._transport.send(rawQuery, vars);
+        return this._transport.send(rawQuery, vars);
+      }
+    }, {
+      key: 'createFragment',
+      value: function createFragment(fragment) {
+        if (!fragment) {
+          throw new Error('fragment is required!');
         }
-      }, {
-        key: 'createFragment',
-        value: function createFragment(fragment) {
-          if (!fragment) {
-            throw new Error('fragment is required!');
-          }
 
-          // XXX: Validate query against the schema
-          var name = 'f' + _uuid2.default.v4().replace(/-/g, '');
-          var fragmentWithName = fragment.replace('fragment', 'fragment ' + name);
-          this._fragments[name] = fragmentWithName;
+        // XXX: Validate query against the schema
+        var name = 'f' + _uuid2.default.v4().replace(/-/g, '');
+        var fragmentWithName = fragment.replace('fragment', 'fragment ' + name);
+        this._fragments[name] = fragmentWithName;
 
-          return name;
-        }
-      }, {
-        key: '_findFragments',
-        value: function _findFragments(queryOrFragment) {
-          var _this = this;
+        return name;
+      }
+    }, {
+      key: '_findFragments',
+      value: function _findFragments(queryOrFragment) {
+        var _this = this;
 
-          var fragmentsMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+        var fragmentsMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-          var matched = queryOrFragment.match(/\.\.\.[A-Za-z0-9]+/g);
-          if (matched) {
-            var fragmentNames = matched.map(function (name) {
-              return name.replace('...', '');
-            });
-            fragmentNames.forEach(function (name) {
-              var fragment = _this._fragments[name];
-              if (!fragment) {
-                throw new Error('There is no such fragment: ' + name);
-              }
-
-              fragmentsMap[name] = fragment;
-              _this._findFragments(fragment, fragmentsMap);
-            });
-          }
-
-          var fragmentsArray = Object.keys(fragmentsMap).map(function (key) {
-            return fragmentsMap[key];
+        var matched = queryOrFragment.match(/\.\.\.[A-Za-z0-9]+/g);
+        if (matched) {
+          var fragmentNames = matched.map(function (name) {
+            return name.replace('...', '');
           });
+          fragmentNames.forEach(function (name) {
+            var fragment = _this._fragments[name];
+            if (!fragment) {
+              throw new Error('There is no such fragment: ' + name);
+            }
 
-          return fragmentsArray;
+            fragmentsMap[name] = fragment;
+            _this._findFragments(fragment, fragmentsMap);
+          });
         }
-      }, {
-        key: 'query',
-        value: function query(_query, vars) {
-          if (!_query) {
-            throw new Error('query is required!');
-          }
 
-          // XXX: Validate query against the schema
-          var fragments = this._findFragments(_query);
-          var queryWithFragments = _query + '\n' + fragments.join('\n');
+        var fragmentsArray = Object.keys(fragmentsMap).map(function (key) {
+          return fragmentsMap[key];
+        });
 
-          return this.send(queryWithFragments, vars);
+        return fragmentsArray;
+      }
+    }, {
+      key: 'query',
+      value: function query(_query, vars) {
+        if (!_query) {
+          throw new Error('query is required!');
         }
-      }, {
-        key: 'mutate',
-        value: function mutate(query, vars) {
-          if (!query) {
-            throw new Error('query is required!');
-          }
 
-          // XXX: Validate query against the schema
-          var mutationQuery = 'mutation _ ' + query.trim();
-          var fragments = this._findFragments(mutationQuery);
-          var queryWithFragments = mutationQuery + '\n' + fragments.join('\n');
+        // XXX: Validate query against the schema
+        var fragments = this._findFragments(_query);
+        var queryWithFragments = _query + '\n' + fragments.join('\n');
 
-          return this.send(queryWithFragments, vars);
+        return this.send(queryWithFragments, vars);
+      }
+    }, {
+      key: 'mutate',
+      value: function mutate(query, vars) {
+        if (!query) {
+          throw new Error('query is required!');
         }
-      }, {
-        key: 'watchQuery',
-        value: function watchQuery(query, _vars, _callback) {
-          var callback = _callback;
-          var vars = _vars;
 
-          if (!query) {
-            throw new Error('query is required');
-          }
+        // XXX: Validate query against the schema
+        var mutationQuery = 'mutation _ ' + query.trim();
+        var fragments = this._findFragments(mutationQuery);
+        var queryWithFragments = mutationQuery + '\n' + fragments.join('\n');
 
-          if (!callback) {
-            callback = vars;
-            vars = {};
-          }
+        return this.send(queryWithFragments, vars);
+      }
+    }, {
+      key: 'watchQuery',
+      value: function watchQuery(query, _vars, _callback) {
+        var callback = _callback;
+        var vars = _vars;
 
-          if (typeof callback !== 'function') {
-            throw new Error('You need to provide a callback to watch');
-          }
-
-          var hasItemAlready = Boolean(this.cache.getItem(query, vars));
-          if (!hasItemAlready) {
-            this._fetchToCache(query, vars);
-          }
-          return this.cache.watchItem(query, vars, callback);
+        if (!query) {
+          throw new Error('query is required');
         }
-      }, {
-        key: 'refetchQuery',
-        value: function refetchQuery(query, vars) {
-          if (!query) {
-            throw new Error('query is required');
-          }
 
+        if (!callback) {
+          callback = vars;
+          vars = {};
+        }
+
+        if (typeof callback !== 'function') {
+          throw new Error('You need to provide a callback to watch');
+        }
+
+        var hasItemAlready = Boolean(this.cache.getItem(query, vars));
+        if (!hasItemAlready) {
           this._fetchToCache(query, vars);
         }
-      }, {
-        key: '_fetchToCache',
-        value: function _fetchToCache(query, vars) {
-          var _this2 = this;
-
-          this.query(query, vars).then(function (payload) {
-            _this2.cache.setItemPayload(query, vars, payload);
-          }).catch(function (error) {
-            _this2.cache.fireError(query, vars, error);
-          });
+        return this.cache.watchItem(query, vars, callback);
+      }
+    }, {
+      key: 'refetchQuery',
+      value: function refetchQuery(query, vars) {
+        if (!query) {
+          throw new Error('query is required');
         }
-      }]);
-      return Lokka;
-    }();
 
-    exports.Lokka = Lokka;
-    exports.default = Lokka;
-  });
+        this._fetchToCache(query, vars);
+      }
+    }, {
+      key: '_fetchToCache',
+      value: function _fetchToCache(query, vars) {
+        var _this2 = this;
+
+        this.query(query, vars).then(function (payload) {
+          _this2.cache.setItemPayload(query, vars, payload);
+        }).catch(function (error) {
+          _this2.cache.fireError(query, vars, error);
+        });
+      }
+    }]);
+    return Lokka;
+  }();
+
+  exports.Lokka = Lokka;
+  exports.default = Lokka;
 });
 
 /***/ }

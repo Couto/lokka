@@ -1,9 +1,12 @@
 module.exports = {
 
-  entry: './index.js',
+  entry: {
+    lokka: './lib/index.js',
+    transport: './lib/transport.js',
+  },
 
   output: {
-    filename: 'lokka.js',
+    filename: '[name].js',
     path: '.',
     libraryTarget: 'umd',
   },
